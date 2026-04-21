@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>万次郎の偉人診断</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #FFE600; }
+
+    #app {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background: #FFE600;
+      min-height: 100dvh;
+      max-width: 390px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dot-bg {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(0,0,0,0.07) 2px, transparent 2px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .screen {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding: 20px 18px 24px;
+    }
+
+    .hidden { display: none !important; }
+
+    .badge { text-align: center; margin-bottom: 8px; }
+    .badge span {
+      display: inline-block;
+      background: #111;
+      color: #FFE600;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.06em;
+    }
+
+    .main-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #111;
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .mascot-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .mascot-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #111;
+      border: 3px solid #111;
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+    .mascot-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+    .bubble {
+      flex: 1;
+      background: #fff;
+      border: 2.5px solid #111;
+      border-radius: 14px;
+      padding: 10px 13px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      position: relative;
+      line-height: 1.5;
+    }
+    .bubble::before {
+      content: '';
+      position: absolute;
+      left: -10px; top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-right-color: #111;
+    }
+    .bubble::after {
+      content: '';
+      position: absolute;
+      left: -7px; top: 50%;
+      transform: translateY(-50%);
+      border: 4px solid transparent;
+      border-right-color: #fff;
+    }
+
+    .progress-wrap { margin-bottom: 10px; }
+    .progress-track {
+      background: rgba(0,0,0,0.13);
+      border-radius: 99px;
+      height: 6px;
+      margin-bottom: 4px;
+    }
+    .progress-fill {
+      background: #111;
+      height: 6px;
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+    .progress-label { font-size: 11px; font-weight: 700; color: #444; text-align: right; }
+
+    .q-card {
+      background: #fff;
+      border: 3px solid #111;
+      border-radius: 18px;
+      padding: 16px 15px;
+      box-shadow: 4px 4px 0 #111;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .q-num { font-size: 11px; font-weight: 700; color: #bbb; margin-bottom: 4px; }
+    .q-text { font-size: 17px; font-weight: 900; color: #111; margin-bottom: 14px; line-height: 1.4; }
+    .options { display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: center; }
+
+    .opt-btn {
+      background: #FFE600;
+      border: 2.5px solid #111;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+      cursor: pointer;
+      text-align: left;
+      box-shadow: 3px 3px 0 #111;
+      transition: all 0.12s;
+      line-height: 1.3;
+    }
+    .opt-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 #111; background: #111; color: #FFE600; }
+
+    .result-card {
+      background: #fff;
+      border: 3px solid #111;
+      border-radius: 18px;
+      padding: 18px 16px;
+      box-shadow: 5px 5px 0 #111;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    .rarity-badge {
+      background: #FF3B3B;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+
+    .res-label { font-size: 11px; color: #bbb; font-weight: 700; margin-bottom: 2px; }
+    .res-name { font-size: 26px; font-weight: 900; color: #111; margin-bottom: 3px; }
+    .res-keywords { font-size: 12px; color: #666; font-weight: 700; margin-bottom: 12px; }
+
+    .res-mascot {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 4px solid #111;
+      overflow: hidden;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      margin-bottom: 12px;
+    }
+    .res-mascot img { width: 100%; height: 100%; object-fit: cover; }
+
+    .res-desc { font-size: 13px; line-height: 1.7; color: #333; margin-bottom: 12px; text-align: left; width: 100%; }
+
+    .quote-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #FFE600;
+      border: 2.5px solid #111;
+      border-radius: 12px;
+      padding: 11px 13px;
+      margin-bottom: 14px;
+      width: 100%;
+    }
+    .quote-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 2px solid #111;
+      overflow: hidden;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .quote-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .quote-text { font-size: 13px; font-weight: 700; color: #111; line-height: 1.5; }
+
+    .btn-share {
+      background: #111;
+      color: #FFE600;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+      box-shadow: 3px 3px 0 #555;
+      transition: all 0.12s;
+    }
+    .btn-retry {
+      background: transparent;
+      color: #111;
+      border: 2.5px solid #111;
+      border-radius: 12px;
+      padding: 11px;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="dot-bg"></div>
+
+  <div class="screen" id="screen-quiz">
+    <div class="badge"><span>ダジャレッサーパンダ</span></div>
+    <div class="main-title">万次郎の偉人診断</div>
+    <div class="mascot-row">
+      <div class="mascot-circle">🦝</div>
+      <div class="bubble" id="bubble-text">さあ、診断をはじめよう。</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="prog-label">0 / 5</div>
+    </div>
+    <div class="q-card">
+      <div class="q-num" id="q-num">Q1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="q-opts"></div>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="screen-result">
+    <div class="badge"><span>ダジャレッサーパンダ</span></div>
+    <div class="main-title">万次郎の偉人診断</div>
+    <div class="mascot-row">
+      <div class="mascot-circle">🦝</div>
+      <div class="bubble">診断完了じゃ！</div>
+    </div>
+    <div class="result-card">
+      <div class="rarity-badge" id="res-rarity"></div>
+      <div class="res-label">あなたは...</div>
+      <div class="res-name" id="res-name"></div>
+      <div class="res-keywords" id="res-keywords"></div>
+      <div class="res-mascot" id="res-mascot">🦝</div>
+      <div class="res-desc" id="res-desc"></div>
+      <div class="quote-wrap">
+        <div class="quote-icon" id="res-quote-icon">🦝</div>
+        <div class="quote-text" id="res-quote"></div>
+      </div>
+      <button class="btn-share" id="btn-share">𝕏 でシェアする</button>
+      <button class="btn-retry" id="btn-retry">もう一度やる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const Qs = [
+  {
+    text:"週末の過ごし方は？",
+    opts:["計画を立てて充実させたい","気分で決める","誰かと一緒に過ごしたい","とにかくゆっくりしたい"],
+    sc:[{s:2,h:1,r:0,m:1,t:2,n:0},{s:0,h:0,r:2,m:2,t:0,n:2},{s:1,h:1,r:2,m:1,t:0,n:1},{s:1,h:2,r:0,m:0,t:1,n:0}]
+  },
+  {
+    text:"迷子になったとき、どうする？",
+    opts:["地図で現在地を確認する","とりあえず歩いてみる","誰かに聞く","来た道を戻る"],
+    sc:[{s:2,h:2,r:0,m:1,t:2,n:1},{s:0,h:0,r:2,m:2,t:0,n:2},{s:1,h:1,r:2,m:1,t:0,n:1},{s:1,h:2,r:0,m:0,t:1,n:0}]
+  },
+  {
+    text:"新しいことを始めるとき、どっちに近い？",
+    opts:["まず調べてから動く","やりながら覚える","誰かに教えてもらう","前の経験と照らし合わせる"],
+    sc:[{s:2,h:2,r:0,m:0,t:1,n:0},{s:0,h:0,r:2,m:2,t:0,n:2},{s:1,h:1,r:1,m:1,t:0,n:0},{s:1,h:2,r:0,m:0,t:2,n:0}]
+  },
+  {
+    text:"気の合う人ってどんな人？",
+    opts:["笑いのツボが合う人","価値観が近い人","話してて刺激になる人","一緒にいて落ち着く人"],
+    sc:[{s:0,h:0,r:2,m:2,t:0,n:1},{s:2,h:2,r:0,m:0,t:2,n:1},{s:1,h:0,r:2,m:2,t:0,n:2},{s:1,h:2,r:0,m:0,t:1,n:0}]
+  },
+  {
+    text:"うまくいかないとき、どうする？",
+    opts:["原因を分析して次に活かす","気持ち切り替えてまた動く","誰かに話を聞いてもらう","しばらく寝かせておく"],
+    sc:[{s:2,h:2,r:0,m:0,t:2,n:1},{s:0,h:0,r:2,m:2,t:0,n:2},{s:1,h:1,r:2,m:1,t:0,n:0},{s:1,h:1,r:0,m:1,t:1,n:0}]
+  }
+];
+
+const types = {
+  s:{name:"島津斉彬",rarity:"出現率10%",keywords:"ビジョン × 人格者",desc:"長期的な視点でものを考え、人を育てることに喜びを感じる。先見性があり、静かだけど確かな影響力を持つ。焦らず、でも確実に前へ進む。",quote:"百年先を見て、今日の一手を打て。"},
+  h:{name:"保科正之",rarity:"出現率8%",keywords:"誠実 × 堅実",desc:"誠実さと堅実さが際立つ、静かな実力者。目立つことより、確かな結果を出すことを選ぶ。信頼が厚く、長く付き合える人だと思われやすい。",quote:"騒がず、焦らず、ただ正しくあれ。"},
+  r:{name:"坂本龍馬",rarity:"出現率18%",keywords:"直感 × 行動力",desc:"枠にとらわれない発想と、人を繋ぐ力がある。アイデアが次々湧いてくるが、細かいことより大きな絵を描くのが得意。人に好かれやすい。",quote:"世の中を変えるのは、難しく考えん人間ぜよ。"},
+  m:{name:"ジョン万次郎",rarity:"出現率15%",keywords:"チャレンジ × 適応力",desc:"未知の環境にも臆せず飛び込める適応力の持ち主。知らないことを恥じず、学び続ける姿勢が強み。気づいたら最前線にいるタイプ。",quote:"知らない場所こそ、チャンスの匂いがする。"},
+  t:{name:"土方歳三",rarity:"出現率12%",keywords:"美学 × 規律",desc:"美意識が高く、筋の通らないことが苦手。中途半端な状態を整える力があり、責任感も強く信頼されやすい。厳しそうに見えて、情に厚い一面もある。",quote:"美しくない仕事は、仕事じゃない。"},
+  n:{name:"織田信長",rarity:"出現率20%",keywords:"革新 × スピード",desc:"スピードと決断力が武器。「やるか、やらないか」の判断が早く、周りを巻き込む熱量がある。常識より結果を優先するタイプ。退屈が一番の敵。",quote:"会議は三分で終わらせろ。残りは行動に使え。"}
+};
+
+const bubbles = ["さあ、診断をはじめよう。","ほほう、なるほど...","ふむふむ、見えてきたぞ。","もうちょっとじゃ！","最後の質問じゃ！"];
+const labels = ['A','B','C','D'];
+let cur = 0;
+let sc = {s:0,h:0,r:0,m:0,t:0,n:0};
+
+function render() {
+  const q = Qs[cur];
+  document.getElementById('q-num').textContent = `Q${cur+1}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('bubble-text').textContent = bubbles[cur];
+  document.getElementById('prog-fill').style.width = (cur/5*100)+'%';
+  document.getElementById('prog-label').textContent = `${cur} / 5`;
+  const opts = document.getElementById('q-opts');
+  opts.innerHTML = '';
+  q.opts.forEach((o,i) => {
+    const b = document.createElement('button');
+    b.className = 'opt-btn';
+    b.textContent = `${labels[i]}. ${o}`;
+    b.onclick = () => pick(i);
+    opts.appendChild(b);
+  });
+}
+
+function pick(i) {
+  const s = Qs[cur].sc[i];
+  Object.keys(s).forEach(k => sc[k] += s[k]);
+  cur++;
+  if (cur < 5) { render(); } else { showResult(); }
+}
+
+function showResult() {
+  document.getElementById('screen-quiz').classList.add('hidden');
+  document.getElementById('screen-result').classList.remove('hidden');
+  const winner = Object.entries(sc).sort((a,b)=>b[1]-a[1])[0][0];
+  const t = types[winner];
+  document.getElementById('res-rarity').textContent = t.rarity;
+  document.getElementById('res-name').textContent = `${t.name}タイプ`;
+  document.getElementById('res-keywords').textContent = t.keywords;
+  document.getElementById('res-desc').textContent = t.desc;
+  document.getElementById('res-quote').textContent = t.quote;
+  document.getElementById('btn-share').onclick = () => {
+    const txt = `私は${t.rarity}の${t.name}タイプでした！\n${t.keywords}\n\n#万次郎診断 #ダジャレッサーパンダ`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`,'_blank');
+  };
+  document.getElementById('btn-retry').onclick = () => {
+    cur = 0;
+    sc = {s:0,h:0,r:0,m:0,t:0,n:0};
+    document.getElementById('screen-quiz').classList.remove('hidden');
+    document.getElementById('screen-result').classList.add('hidden');
+    render();
+  };
+}
+
+render();
+</script>
+</body>
+</html>
