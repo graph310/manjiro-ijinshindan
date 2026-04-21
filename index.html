@@ -228,6 +228,21 @@
     .quote-icon img { width: 100%; height: 100%; object-fit: cover; }
     .quote-text { font-size: 13px; font-weight: 700; color: #111; line-height: 1.5; }
 
+    .btn-save {
+      background: #fff;
+      color: #111;
+      border: 2.5px solid #111;
+      border-radius: 12px;
+      padding: 13px;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+      box-shadow: 3px 3px 0 #111;
+      transition: all 0.12s;
+    }
     .btn-share {
       background: #111;
       color: #FFE600;
@@ -295,7 +310,9 @@
         <div class="quote-icon" id="res-quote-icon">🦝</div>
         <div class="quote-text" id="res-quote"></div>
       </div>
+      <button class="btn-save" id="btn-save">📥 結果画像を保存する</button>
       <button class="btn-share" id="btn-share">𝕏 でシェアする</button>
+      <canvas id="result-canvas" style="display:none"></canvas>
       <button class="btn-retry" id="btn-retry">もう一度やる</button>
     </div>
   </div>
@@ -387,6 +404,113 @@ function showResult() {
     const txt = `私は${t.rarity}の${t.name}タイプでした！\n${t.keywords}\n\nhttps://manjiro-ijinshindan.vercel.app\n#万次郎診断 #ダジャレッサーパンダ`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`,'_blank');
   };
+  // Canvas で結果カード生成
+  document.getElementById('btn-save').onclick = () => {
+    const canvas = document.getElementById('result-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1200, H = 630;
+    canvas.width = W;
+    canvas.height = H;
+
+    // 背景
+    ctx.fillStyle = '#FFE600';
+    ctx.fillRect(0, 0, W, H);
+
+    // ドット背景
+    ctx.fillStyle = 'rgba(0,0,0,0.07)';
+    for (let x = 12; x < W; x += 24) {
+      for (let y = 12; y < H; y += 24) {
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 白カード
+    ctx.fillStyle = '#fff';
+    roundRect(ctx, 40, 40, W - 80, H - 80, 24);
+    ctx.fill();
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 4;
+    roundRect(ctx, 40, 40, W - 80, H - 80, 24);
+    ctx.stroke();
+
+    // 出現率バッジ
+    ctx.fillStyle = '#FF3B3B';
+    roundRect(ctx, 80, 70, 200, 40, 20);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.rarity, 180, 97);
+
+    // あなたは...
+    ctx.fillStyle = '#bbb';
+    ctx.font = '18px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('あなたは...', 80, 150);
+
+    // タイプ名
+    ctx.fillStyle = '#111';
+    ctx.font = 'bold 72px sans-serif';
+    ctx.fillText(t.name + 'タイプ', 80, 240);
+
+    // キーワード
+    ctx.fillStyle = '#555';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText(t.keywords, 80, 290);
+
+    // セリフ
+    ctx.fillStyle = '#111';
+    ctx.font = 'bold 26px sans-serif';
+    ctx.fillText('「' + t.quote + '」', 80, 520);
+
+    // タグライン
+    ctx.fillStyle = '#888';
+    ctx.font = '20px sans-serif';
+    ctx.fillText('#万次郎診断 #ダジャレッサーパンダ', 80, 560);
+
+    // 偉人画像（右側）
+    if (t.img) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(720, 60, 460, H - 120);
+        ctx.clip();
+        ctx.drawImage(img, 720, 60, 460, H - 120);
+        ctx.restore();
+        downloadCanvas(canvas, t.name);
+      };
+      img.onerror = () => { downloadCanvas(canvas, t.name); };
+      img.src = t.img;
+    } else {
+      downloadCanvas(canvas, t.name);
+    }
+  };
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function downloadCanvas(canvas, name) {
+    const a = document.createElement('a');
+    a.download = '万次郎診断_' + name + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+
   document.getElementById('btn-retry').onclick = () => {
     cur = 0;
     sc = {s:0,h:0,r:0,m:0,t:0,n:0};
