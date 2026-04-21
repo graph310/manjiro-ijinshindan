@@ -412,11 +412,11 @@ function showResult() {
   document.getElementById('btn-save').onclick = () => {
     const canvas = document.getElementById('result-canvas');
     const ctx = canvas.getContext('2d');
-    const W = 1200, H = 630;
+    const W = 1080, H = 1080;
     canvas.width = W;
     canvas.height = H;
 
-    // 背景
+    // 黄色背景
     ctx.fillStyle = '#FFE600';
     ctx.fillRect(0, 0, W, H);
 
@@ -430,67 +430,77 @@ function showResult() {
       }
     }
 
+    // ダジャレッサーパンダ バッジ
+    ctx.fillStyle = '#111';
+    roundRect(ctx, W/2 - 130, 40, 260, 48, 24);
+    ctx.fill();
+    ctx.fillStyle = '#FFE600';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ダジャレッサーパンダ', W/2, 72);
+
+    // タイトル
+    ctx.fillStyle = '#111';
+    ctx.font = 'bold 52px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('万次郎の偉人診断', W/2, 148);
+
     // 白カード
     ctx.fillStyle = '#fff';
-    roundRect(ctx, 40, 40, W - 80, H - 80, 24);
+    roundRect(ctx, 40, 175, W - 80, H - 215, 28);
     ctx.fill();
     ctx.strokeStyle = '#111';
-    ctx.lineWidth = 4;
-    roundRect(ctx, 40, 40, W - 80, H - 80, 24);
+    ctx.lineWidth = 5;
+    roundRect(ctx, 40, 175, W - 80, H - 215, 28);
     ctx.stroke();
 
-    // 出現率バッジ
-    ctx.fillStyle = '#FF3B3B';
-    roundRect(ctx, 80, 70, 200, 40, 20);
-    ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(t.rarity, 180, 97);
+    const drawText = () => {
+      // 出現率バッジ
+      const badgeW = 200;
+      ctx.fillStyle = '#FF3B3B';
+      roundRect(ctx, W/2 - badgeW/2, 195, badgeW, 44, 22);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t.rarity, W/2, 224);
 
-    // あなたは...
-    ctx.fillStyle = '#bbb';
-    ctx.font = '18px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('あなたは...', 80, 150);
+      // あなたは...
+      ctx.fillStyle = '#bbb';
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('あなたは...', W/2, 278);
 
-    // タイプ名
-    ctx.fillStyle = '#111';
-    ctx.font = 'bold 72px sans-serif';
-    ctx.fillText(t.name + 'タイプ', 80, 240);
+      // タイプ名
+      ctx.fillStyle = '#111';
+      ctx.font = 'bold 76px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t.name + 'タイプ', W/2, 365);
 
-    // キーワード
-    ctx.fillStyle = '#555';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText(t.keywords, 80, 290);
+      // キーワード
+      ctx.fillStyle = '#555';
+      ctx.font = 'bold 32px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(t.keywords, W/2, 415);
 
-    // セリフ
-    ctx.fillStyle = '#111';
-    ctx.font = 'bold 26px sans-serif';
-    ctx.fillText('「' + t.quote + '」', 80, 520);
+      downloadCanvas(canvas, t.name);
+    };
 
-    // タグライン
-    ctx.fillStyle = '#888';
-    ctx.font = '20px sans-serif';
-    ctx.fillText('#万次郎診断 #ダジャレッサーパンダ', 80, 560);
-
-    // 偉人画像（右側）
     if (t.img) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(720, 60, 460, H - 120);
-        ctx.clip();
-        ctx.drawImage(img, 720, 60, 460, H - 120);
-        ctx.restore();
-        downloadCanvas(canvas, t.name);
+        // 画像を下半分に中央配置
+        const imgSize = 560;
+        const imgX = (W - imgSize) / 2;
+        const imgY = 440;
+        ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+        drawText();
       };
-      img.onerror = () => { downloadCanvas(canvas, t.name); };
+      img.onerror = () => { drawText(); };
       img.src = t.img;
     } else {
-      downloadCanvas(canvas, t.name);
+      drawText();
     }
   };
 
