@@ -282,6 +282,8 @@
   </div>
 
   <div class="screen hidden" id="screen-result">
+    <div class="badge"><span>ダジャレッサーパンダ</span></div>
+    <div class="main-title">万次郎の偉人診断</div>
     <div class="result-card">
       <div class="rarity-badge" id="res-rarity"></div>
       <div class="res-label">あなたは...</div>
@@ -377,20 +379,10 @@ function showResult() {
   document.getElementById('res-keywords').textContent = t.keywords;
   document.getElementById('res-desc').textContent = t.desc;
   document.getElementById('res-quote').textContent = t.quote;
-  // 大きいアイコン
   const resMascot = document.getElementById('res-mascot');
-  if (t.img) {
-    resMascot.innerHTML = `<img src="${t.img}" alt="${t.name}">`;
-  } else {
-    resMascot.innerHTML = '🦝';
-  }
-  // 吹き出しアイコン
+  resMascot.innerHTML = t.img ? '<img src="' + t.img + '" alt="' + t.name + '">' : '🦝';
   const quoteIcon = document.getElementById('res-quote-icon');
-  if (t.img) {
-    quoteIcon.innerHTML = `<img src="${t.img}" alt="${t.name}">`;
-  } else {
-    quoteIcon.innerHTML = '🦝';
-  }
+  quoteIcon.innerHTML = t.img ? '<img src="' + t.img + '" alt="' + t.name + '">' : '🦝';
   document.getElementById('btn-share').onclick = () => {
     const txt = `私は${t.rarity}の${t.name}タイプでした！\n${t.keywords}\n\n#万次郎診断 #ダジャレッサーパンダ`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`,'_blank');
