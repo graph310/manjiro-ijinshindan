@@ -310,9 +310,13 @@
         <div class="quote-icon" id="res-quote-icon">🦝</div>
         <div class="quote-text" id="res-quote"></div>
       </div>
-      <button class="btn-save" id="btn-save">📥 結果画像を保存する</button>
+      <button class="btn-save" id="btn-save">🎴 結果カードを作る</button>
       <button class="btn-share" id="btn-share">𝕏 でシェアする</button>
       <canvas id="result-canvas" style="display:none"></canvas>
+      <div id="card-preview" style="display:none; margin-top:12px; width:100%;">
+        <p style="font-size:11px; color:#888; font-weight:700; text-align:center; margin-bottom:6px;">画像を長押しして「写真に追加」で保存できるよ</p>
+        <img id="card-img" style="width:100%; border-radius:12px; border:2.5px solid #111;" alt="診断結果">
+      </div>
       <button class="btn-retry" id="btn-retry">もう一度やる</button>
     </div>
   </div>
@@ -505,10 +509,12 @@ function showResult() {
   }
 
   function downloadCanvas(canvas, name) {
-    const a = document.createElement('a');
-    a.download = '万次郎診断_' + name + '.png';
-    a.href = canvas.toDataURL('image/png');
-    a.click();
+    const dataUrl = canvas.toDataURL('image/png');
+    const preview = document.getElementById('card-preview');
+    const img = document.getElementById('card-img');
+    img.src = dataUrl;
+    preview.style.display = 'block';
+    preview.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 
   document.getElementById('btn-retry').onclick = () => {
