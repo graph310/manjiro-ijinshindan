@@ -384,7 +384,7 @@ function showResult() {
   const quoteIcon = document.getElementById('res-quote-icon');
   quoteIcon.innerHTML = t.img ? '<img src="' + t.img + '" alt="' + t.name + '">' : '🦝';
   document.getElementById('btn-share').onclick = () => {
-    const txt = `私は${t.rarity}の${t.name}タイプでした！\n${t.keywords}\n\n#万次郎診断 #ダジャレッサーパンダ`;
+    const txt = `私は${t.rarity}の${t.name}タイプでした！\n${t.keywords}\n\nhttps://manjiro-ijinshindan.vercel.app\n#万次郎診断 #ダジャレッサーパンダ`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(txt)}`,'_blank');
   };
   document.getElementById('btn-retry').onclick = () => {
